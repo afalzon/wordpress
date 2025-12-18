@@ -27,13 +27,5 @@ $myUpdateChecker = PucFactory::buildUpdateChecker(
 );
 
 //Set the branch that contains the stable release.
-// Get the current git branch.
-$head_file = __DIR__ . '/.git/HEAD';
-$git_branch = 'dev'; // Default branch.
-if (is_readable($head_file)) {
-    $head_content = file_get_contents($head_file);
-    if (preg_match('/^ref: refs\/heads\/(.*)$/', trim($head_content), $matches)) {
-        $git_branch = $matches[1];
-    }
-}
-$myUpdateChecker->setBranch($git_branch);
+$update_branch = get_option('mcs_update_branch', 'main'); // Default to 'main'
+$myUpdateChecker->setBranch($update_branch);
