@@ -3,7 +3,7 @@
 // 1. Register the Admin Menu
 function mcs_add_admin_menu() {
     add_menu_page(
-        'Theme Customisation', 'Theme Settings', 'manage_options', 'my-custom-settings', 'mcs_options_page_html', 'dashicons-admin-generic', 99
+        'Theme Customisation', 'Site Settings', 'manage_options', 'my-custom-settings', 'mcs_options_page_html', 'dashicons-admin-generic', 99
     );
 }
 add_action('admin_menu', 'mcs_add_admin_menu');
