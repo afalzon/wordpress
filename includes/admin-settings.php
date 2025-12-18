@@ -15,9 +15,11 @@ function mcs_settings_init() {
     register_setting('mcs_general_group', 'mcs_bank_acc_name');
     register_setting('mcs_general_group', 'mcs_bank_bsb');
     register_setting('mcs_general_group', 'mcs_bank_acc_num');
+    register_setting('mcs_general_group', 'mcs_update_branch');
 
     add_settings_section('mcs_general_section', 'Business Details', 'mcs_general_section_callback', 'mcs_general_group');
     add_settings_field('mcs_abn', 'Australian Business Number (ABN)', 'mcs_abn_render', 'mcs_general_group', 'mcs_general_section');
+    add_settings_field('mcs_update_branch', 'Update Branch', 'mcs_update_branch_render', 'mcs_general_group', 'mcs_general_section');
     add_settings_section('mcs_bank_section', 'Bank Details', 'mcs_bank_section_callback', 'mcs_general_group');
     add_settings_field('mcs_bank_acc_name', 'Account Name', 'mcs_bank_acc_name_render', 'mcs_general_group', 'mcs_bank_section');
     add_settings_field('mcs_bank_bsb', 'BSB', 'mcs_bank_bsb_render', 'mcs_general_group', 'mcs_bank_section');
@@ -92,6 +94,18 @@ function mcs_delivery_section_callback() { echo '<p>Manage the dates and time sl
 
 // Simple Fields
 function mcs_abn_render() { echo '<input type="text" name="mcs_abn" value="' . esc_attr(get_option('mcs_abn')) . '" class="regular-text">'; }
+
+function mcs_update_branch_render() {
+    $current_branch = get_option('mcs_update_branch', 'main'); // Default to 'main'
+    ?>
+    <select name="mcs_update_branch">
+        <option value="main" <?php selected($current_branch, 'main'); ?>>Main (Stable)</option>
+        <option value="dev" <?php selected($current_branch, 'dev'); ?>>Development</option>
+    </select>
+    <p class="description">Select the GitHub branch to check for updates. 'Development' may be unstable.</p>
+    <?php
+}
+
 function mcs_bank_acc_name_render() { echo '<input type="text" name="mcs_bank_acc_name" value="' . esc_attr(get_option('mcs_bank_acc_name')) . '" class="regular-text">'; }
 function mcs_bank_bsb_render() { echo '<input type="text" name="mcs_bank_bsb" value="' . esc_attr(get_option('mcs_bank_bsb')) . '" class="regular-text">'; }
 function mcs_bank_acc_num_render() { echo '<input type="text" name="mcs_bank_acc_num" value="' . esc_attr(get_option('mcs_bank_acc_num')) . '" class="regular-text">'; }

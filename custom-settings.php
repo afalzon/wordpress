@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Aaron Falzon - Custom Theme Settings
  * Description: A custom settings panel for the theme with Front-end and Back-end configurations.
- * Version: 1.8.2
+ * Version: 1.8.2b
  * Author: Aaron Falzon
  */
 
@@ -27,4 +27,5 @@ $myUpdateChecker = PucFactory::buildUpdateChecker(
 );
 
 //Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('main');
+$update_branch = get_option('mcs_update_branch', 'main'); // Default to 'main'
+$myUpdateChecker->setBranch($update_branch);
