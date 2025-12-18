@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Aaron Falzon - Custom Theme Settings
  * Description: A custom settings panel for the theme with Front-end and Back-end configurations.
- * Version: 1.7
+ * Version: 1.8
  * Author: Aaron Falzon
  */
 
@@ -16,3 +16,15 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/admin-settings.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/frontend-delivery.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/frontend-logic.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/common-logic.php';
+
+require_once plugin_dir_path( __FILE__ ) . 'includes/plugin-update-checker-5.6/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+	'https://github.com/afalzon/wordpress/',
+	__FILE__,
+	'custom-settings'
+);
+
+//Set the branch that contains the stable release.
+$myUpdateChecker->setBranch('main');
