@@ -29,3 +29,9 @@ $myUpdateChecker = PucFactory::buildUpdateChecker(
 //Set the branch that contains the stable release.
 $update_branch = get_option('mcs_update_branch', 'main'); // Default to 'main'
 $myUpdateChecker->setBranch($update_branch);
+
+// Include the license check file.
+require_once plugin_dir_path( __FILE__ ) . 'includes/license-check.php';
+
+// Check for a valid license.
+$has_valid_license = has_valid_license();
