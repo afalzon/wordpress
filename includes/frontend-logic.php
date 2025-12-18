@@ -16,11 +16,15 @@ function mcs_get_active_holiday() {
 }
 add_filter('woocommerce_is_purchasable', 'mcs_disable_purchasing_holidays');
 function mcs_disable_purchasing_holidays($purchasable) {
+    global $has_valid_license;
+    if (!$has_valid_license) return $purchasable;
     if (mcs_get_active_holiday()) return false;
     return $purchasable;
 }
 add_action('wp_footer', 'mcs_show_holiday_banner');
 function mcs_show_holiday_banner() {
+    global $has_valid_license;
+    if (!$has_valid_license) return;
     $active = mcs_get_active_holiday();
     if (!$active) return;
     $message = (isset($active['use_default']) && $active['use_default'] == 1) ? get_option('mcs_default_holiday_msg') : (isset($active['msg']) ? $active['msg'] : '');
