@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Falz.com.au WP Theme
  * Description: A custom settings panel for the theme with Front-end and Back-end configurations.
- * Version: 1.8.4
+ * Version: 2
  * Author: Aaron Falzon
  */
 
