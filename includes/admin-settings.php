@@ -12,18 +12,11 @@ add_action('admin_menu', 'mcs_add_admin_menu');
 function mcs_settings_init() {
     // --- GENERAL ---
     register_setting('mcs_general_group', 'mcs_abn');
-    register_setting('mcs_general_group', 'mcs_bank_acc_name');
-    register_setting('mcs_general_group', 'mcs_bank_bsb');
-    register_setting('mcs_general_group', 'mcs_bank_acc_num');
     register_setting('mcs_general_group', 'mcs_update_branch');
 
     add_settings_section('mcs_general_section', 'Business Details', 'mcs_general_section_callback', 'mcs_general_group');
     add_settings_field('mcs_abn', 'Australian Business Number (ABN)', 'mcs_abn_render', 'mcs_general_group', 'mcs_general_section');
     add_settings_field('mcs_update_branch', 'Update Branch', 'mcs_update_branch_render', 'mcs_general_group', 'mcs_general_section');
-    add_settings_section('mcs_bank_section', 'Bank Details', 'mcs_bank_section_callback', 'mcs_general_group');
-    add_settings_field('mcs_bank_acc_name', 'Account Name', 'mcs_bank_acc_name_render', 'mcs_general_group', 'mcs_bank_section');
-    add_settings_field('mcs_bank_bsb', 'BSB', 'mcs_bank_bsb_render', 'mcs_general_group', 'mcs_bank_section');
-    add_settings_field('mcs_bank_acc_num', 'Account Number', 'mcs_bank_acc_num_render', 'mcs_general_group', 'mcs_bank_section');
 
     // --- FRONT END ---
     register_setting('mcs_frontend_group', 'mcs_show_abn_footer');
@@ -32,11 +25,17 @@ function mcs_settings_init() {
 
     // --- BACK END ---
     register_setting('mcs_backend_group', 'mcs_enable_bank_action');
+    register_setting('mcs_backend_group', 'mcs_bank_acc_name');
+    register_setting('mcs_backend_group', 'mcs_bank_bsb');
+    register_setting('mcs_backend_group', 'mcs_bank_acc_num');
     register_setting('mcs_backend_group', 'mcs_enable_min_order');
     register_setting('mcs_backend_group', 'mcs_min_order_amount');
     register_setting('mcs_backend_group', 'mcs_min_order_ignore_virtual');
     add_settings_section('mcs_backend_section', 'WooCommerce Options', 'mcs_backend_section_callback', 'mcs_backend_group');
     add_settings_field('mcs_enable_bank_action', 'Order Actions', 'mcs_enable_bank_action_render', 'mcs_backend_group', 'mcs_backend_section');
+    add_settings_field('mcs_bank_acc_name', 'Account Name', 'mcs_bank_acc_name_render', 'mcs_backend_group', 'mcs_backend_section', array('class' => 'mcs-bank-detail-row'));
+    add_settings_field('mcs_bank_bsb', 'BSB', 'mcs_bank_bsb_render', 'mcs_backend_group', 'mcs_backend_section', array('class' => 'mcs-bank-detail-row'));
+    add_settings_field('mcs_bank_acc_num', 'Account Number', 'mcs_bank_acc_num_render', 'mcs_backend_group', 'mcs_backend_section', array('class' => 'mcs-bank-detail-row'));
     add_settings_field('mcs_min_order_amount', 'Minimum Order Amount ($)', 'mcs_min_order_amount_render', 'mcs_backend_group', 'mcs_backend_section');
 
     // --- HOLIDAYS ---
@@ -52,14 +51,26 @@ function mcs_settings_init() {
     add_settings_section('mcs_delivery_section', 'Delivery & Pickup Options', 'mcs_delivery_section_callback', 'mcs_delivery_group');
     add_settings_field('mcs_enable_delivery_slots', 'Enable Feature', 'mcs_enable_delivery_slots_render', 'mcs_delivery_group', 'mcs_delivery_section');
     add_settings_field('mcs_delivery_slots_list', 'Time Slots', 'mcs_delivery_slots_list_render', 'mcs_delivery_group', 'mcs_delivery_section');
+
+    // --- LICENSE ---
+    register_setting('mcs_license_group', 'my_plugin_license_key');
+    add_settings_section('mcs_license_section', 'License Details', 'mcs_license_section_callback', 'mcs_license_group');
+    add_settings_field('my_plugin_license_key', 'License Key', 'mcs_license_key_render', 'mcs_license_group', 'mcs_license_section');
 }
 add_action('admin_init', 'mcs_settings_init');
 
 // 3. Render the Admin Page HTML
 function mcs_options_page_html() {
+    global $has_valid_license;
     if (!current_user_can('manage_options')) return;
     $default_tab = 'general';
     $tab = isset($_GET['tab']) ? $_GET['tab'] : $default_tab;
+
+    // If trying to access a premium tab without a license, redirect to the license tab.
+    if ( (!$has_valid_license) && (in_array($tab, ['holidays', 'delivery'])) ) {
+        $tab = 'license';
+    }
+
     ?>
     <div class="wrap">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
@@ -67,16 +78,20 @@ function mcs_options_page_html() {
             <a href="?page=my-custom-settings&tab=general" class="nav-tab <?php echo $tab === 'general' ? 'nav-tab-active' : ''; ?>">General Settings</a>
             <a href="?page=my-custom-settings&tab=frontend" class="nav-tab <?php echo $tab === 'frontend' ? 'nav-tab-active' : ''; ?>">Front End</a>
             <a href="?page=my-custom-settings&tab=backend" class="nav-tab <?php echo $tab === 'backend' ? 'nav-tab-active' : ''; ?>">Back End</a>
-            <a href="?page=my-custom-settings&tab=holidays" class="nav-tab <?php echo $tab === 'holidays' ? 'nav-tab-active' : ''; ?>">Holidays</a>
-            <a href="?page=my-custom-settings&tab=delivery" class="nav-tab <?php echo $tab === 'delivery' ? 'nav-tab-active' : ''; ?>">Delivery/Pickup</a>
+            <?php if ($has_valid_license): ?>
+                <a href="?page=my-custom-settings&tab=holidays" class="nav-tab <?php echo $tab === 'holidays' ? 'nav-tab-active' : ''; ?>">Holidays</a>
+                <a href="?page=my-custom-settings&tab=delivery" class="nav-tab <?php echo $tab === 'delivery' ? 'nav-tab-active' : ''; ?>">Delivery/Pickup</a>
+            <?php endif; ?>
+            <a href="?page=my-custom-settings&tab=license" class="nav-tab <?php echo $tab === 'license' ? 'nav-tab-active' : ''; ?>">License</a>
         </nav>
         <form action="options.php" method="post">
             <?php
             if ($tab === 'general') { settings_fields('mcs_general_group'); do_settings_sections('mcs_general_group'); }
             elseif ($tab === 'frontend') { settings_fields('mcs_frontend_group'); do_settings_sections('mcs_frontend_group'); }
             elseif ($tab === 'backend') { settings_fields('mcs_backend_group'); do_settings_sections('mcs_backend_group'); }
-            elseif ($tab === 'holidays') { settings_fields('mcs_holidays_group'); do_settings_sections('mcs_holidays_group'); }
-            elseif ($tab === 'delivery') { settings_fields('mcs_delivery_group'); do_settings_sections('mcs_delivery_group'); }
+            elseif ($tab === 'holidays' && $has_valid_license) { settings_fields('mcs_holidays_group'); do_settings_sections('mcs_holidays_group'); }
+            elseif ($tab === 'delivery' && $has_valid_license) { settings_fields('mcs_delivery_group'); do_settings_sections('mcs_delivery_group'); }
+            elseif ($tab === 'license') { settings_fields('mcs_license_group'); do_settings_sections('mcs_license_group'); }
             submit_button('Save Settings');
             ?>
         </form>
@@ -86,11 +101,23 @@ function mcs_options_page_html() {
 
 // --- RENDER CALLBACKS ---
 function mcs_general_section_callback() { echo '<p>Enter your core business details here.</p>'; }
-function mcs_bank_section_callback() { echo '<p>Enter your bank details below.</p>'; }
 function mcs_frontend_section_callback() { echo '<p>Control how elements appear on the public facing site.</p>'; }
 function mcs_backend_section_callback() { echo '<p>Tools to assist with Order Management.</p>'; }
 function mcs_holidays_section_callback() { echo '<p>Manage dates when the store will be closed.</p>'; }
 function mcs_delivery_section_callback() { echo '<p>Manage the dates and time slots customers can choose at checkout.</p>'; }
+function mcs_license_section_callback() { echo '<p>Enter your license key to unlock premium features.</p>'; }
+
+// License field render
+function mcs_license_key_render() {
+    $license_key = get_option('my_plugin_license_key');
+    $license_status = get_option('my_plugin_license_status');
+    echo '<input type="text" name="my_plugin_license_key" value="' . esc_attr($license_key) . '" class="regular-text">';
+    if ($license_status === 'valid') {
+        echo '<p style="color: green;">License is active and valid.</p>';
+    } else {
+        echo '<p style="color: red;">License is inactive or invalid.</p>';
+    }
+}
 
 // Simple Fields
 function mcs_abn_render() { echo '<input type="text" name="mcs_abn" value="' . esc_attr(get_option('mcs_abn')) . '" class="regular-text">'; }
@@ -110,7 +137,24 @@ function mcs_bank_acc_name_render() { echo '<input type="text" name="mcs_bank_ac
 function mcs_bank_bsb_render() { echo '<input type="text" name="mcs_bank_bsb" value="' . esc_attr(get_option('mcs_bank_bsb')) . '" class="regular-text">'; }
 function mcs_bank_acc_num_render() { echo '<input type="text" name="mcs_bank_acc_num" value="' . esc_attr(get_option('mcs_bank_acc_num')) . '" class="regular-text">'; }
 function mcs_show_abn_render() { echo '<label><input type="checkbox" name="mcs_show_abn_footer" value="1" ' . checked(1, get_option('mcs_show_abn_footer'), false) . ' /> Display ABN in footer.</label>'; }
-function mcs_enable_bank_action_render() { echo '<label><input type="checkbox" name="mcs_enable_bank_action" value="1" ' . checked(1, get_option('mcs_enable_bank_action'), false) . ' /> Enable "Send Bank Details" action.</label>'; }
+function mcs_enable_bank_action_render() { 
+    echo '<label><input type="checkbox" id="mcs_enable_bank_action" name="mcs_enable_bank_action" value="1" ' . checked(1, get_option('mcs_enable_bank_action'), false) . ' /> Enable "Send Bank Details" action.</label>'; 
+    ?>
+    <script>
+        jQuery(document).ready(function($) {
+            function toggleBankDetails() {
+                if ($('#mcs_enable_bank_action').is(':checked')) {
+                    $('.mcs-bank-detail-row').show();
+                } else {
+                    $('.mcs-bank-detail-row').hide();
+                }
+            }
+            $('#mcs_enable_bank_action').change(toggleBankDetails);
+            toggleBankDetails();
+        });
+    </script>
+    <?php
+}
 
 function mcs_min_order_amount_render() {
     $enabled = get_option('mcs_enable_min_order');

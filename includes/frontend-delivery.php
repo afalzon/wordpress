@@ -7,7 +7,8 @@
 // 1. Add Fields to Checkout
 add_action( 'woocommerce_before_order_notes', 'mcs_add_delivery_checkout_fields' );
 function mcs_add_delivery_checkout_fields( $checkout ) {
-    if ( ! get_option('mcs_enable_delivery_slots') ) return;
+    global $has_valid_license;
+    if ( !$has_valid_license || !get_option('mcs_enable_delivery_slots') ) return;
 
     echo '<div id="mcs_delivery_checkout_field"><h3>Delivery / Pickup Details</h3>';
 
@@ -47,7 +48,8 @@ function mcs_add_delivery_checkout_fields( $checkout ) {
 // 2. Validate Fields
 add_action( 'woocommerce_checkout_process', 'mcs_validate_delivery_checkout_fields' );
 function mcs_validate_delivery_checkout_fields() {
-    if ( ! get_option('mcs_enable_delivery_slots') ) return;
+    global $has_valid_license;
+    if ( !$has_valid_license || !get_option('mcs_enable_delivery_slots') ) return;
 
     if ( empty( $_POST['mcs_delivery_date'] ) ) {
         wc_add_notice( 'Please select a preferred <strong>Date</strong> for delivery/pickup.', 'error' );
@@ -60,7 +62,8 @@ function mcs_validate_delivery_checkout_fields() {
 // 3. Save to Order Meta
 add_action( 'woocommerce_checkout_update_order_meta', 'mcs_save_delivery_checkout_fields' );
 function mcs_save_delivery_checkout_fields( $order_id ) {
-    if ( ! get_option('mcs_enable_delivery_slots') ) return;
+    global $has_valid_license;
+    if ( !$has_valid_license || !get_option('mcs_enable_delivery_slots') ) return;
 
     if ( ! empty( $_POST['mcs_delivery_date'] ) ) {
         update_post_meta( $order_id, '_mcs_delivery_date', sanitize_text_field( $_POST['mcs_delivery_date'] ) );
@@ -73,6 +76,9 @@ function mcs_save_delivery_checkout_fields( $order_id ) {
 // 4. Display in Admin Order View
 add_action( 'woocommerce_admin_order_data_after_billing_address', 'mcs_show_delivery_info_admin' );
 function mcs_show_delivery_info_admin( $order ) {
+    global $has_valid_license;
+    if ( !$has_valid_license ) return;
+    
     $date = $order->get_meta( '_mcs_delivery_date' );
     $time = $order->get_meta( '_mcs_delivery_time' );
 
@@ -86,6 +92,9 @@ function mcs_show_delivery_info_admin( $order ) {
 // 5. Display in Emails
 add_action( 'woocommerce_email_after_order_table', 'mcs_show_delivery_info_email', 20, 4 );
 function mcs_show_delivery_info_email( $order, $sent_to_admin, $plain_text, $email ) {
+    global $has_valid_license;
+    if ( !$has_valid_license ) return;
+
     $date = $order->get_meta( '_mcs_delivery_date' );
     $time = $order->get_meta( '_mcs_delivery_time' );
 
@@ -99,6 +108,8 @@ function mcs_show_delivery_info_email( $order, $sent_to_admin, $plain_text, $ema
 // 6. Add Custom Column to Order List (The Table View)
 add_filter( 'manage_edit-shop_order_columns', 'mcs_add_order_column_header' );
 function mcs_add_order_column_header( $columns ) {
+    global $has_valid_license;
+    if ( !$has_valid_license ) return $columns;
     // Add new column at the end
     $columns['mcs_timeslot'] = 'Preferred Time';
     return $columns;
