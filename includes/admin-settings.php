@@ -12,18 +12,11 @@ add_action('admin_menu', 'mcs_add_admin_menu');
 function mcs_settings_init() {
     // --- GENERAL ---
     register_setting('mcs_general_group', 'mcs_abn');
-    register_setting('mcs_general_group', 'mcs_bank_acc_name');
-    register_setting('mcs_general_group', 'mcs_bank_bsb');
-    register_setting('mcs_general_group', 'mcs_bank_acc_num');
     register_setting('mcs_general_group', 'mcs_update_branch');
 
     add_settings_section('mcs_general_section', 'Business Details', 'mcs_general_section_callback', 'mcs_general_group');
     add_settings_field('mcs_abn', 'Australian Business Number (ABN)', 'mcs_abn_render', 'mcs_general_group', 'mcs_general_section');
     add_settings_field('mcs_update_branch', 'Update Branch', 'mcs_update_branch_render', 'mcs_general_group', 'mcs_general_section');
-    add_settings_section('mcs_bank_section', 'Bank Details', 'mcs_bank_section_callback', 'mcs_general_group');
-    add_settings_field('mcs_bank_acc_name', 'Account Name', 'mcs_bank_acc_name_render', 'mcs_general_group', 'mcs_bank_section');
-    add_settings_field('mcs_bank_bsb', 'BSB', 'mcs_bank_bsb_render', 'mcs_general_group', 'mcs_bank_section');
-    add_settings_field('mcs_bank_acc_num', 'Account Number', 'mcs_bank_acc_num_render', 'mcs_general_group', 'mcs_bank_section');
 
     // --- FRONT END ---
     register_setting('mcs_frontend_group', 'mcs_show_abn_footer');
@@ -32,11 +25,17 @@ function mcs_settings_init() {
 
     // --- BACK END ---
     register_setting('mcs_backend_group', 'mcs_enable_bank_action');
+    register_setting('mcs_backend_group', 'mcs_bank_acc_name');
+    register_setting('mcs_backend_group', 'mcs_bank_bsb');
+    register_setting('mcs_backend_group', 'mcs_bank_acc_num');
     register_setting('mcs_backend_group', 'mcs_enable_min_order');
     register_setting('mcs_backend_group', 'mcs_min_order_amount');
     register_setting('mcs_backend_group', 'mcs_min_order_ignore_virtual');
     add_settings_section('mcs_backend_section', 'WooCommerce Options', 'mcs_backend_section_callback', 'mcs_backend_group');
     add_settings_field('mcs_enable_bank_action', 'Order Actions', 'mcs_enable_bank_action_render', 'mcs_backend_group', 'mcs_backend_section');
+    add_settings_field('mcs_bank_acc_name', 'Account Name', 'mcs_bank_acc_name_render', 'mcs_backend_group', 'mcs_backend_section', array('class' => 'mcs-bank-detail-row'));
+    add_settings_field('mcs_bank_bsb', 'BSB', 'mcs_bank_bsb_render', 'mcs_backend_group', 'mcs_backend_section', array('class' => 'mcs-bank-detail-row'));
+    add_settings_field('mcs_bank_acc_num', 'Account Number', 'mcs_bank_acc_num_render', 'mcs_backend_group', 'mcs_backend_section', array('class' => 'mcs-bank-detail-row'));
     add_settings_field('mcs_min_order_amount', 'Minimum Order Amount ($)', 'mcs_min_order_amount_render', 'mcs_backend_group', 'mcs_backend_section');
 
     // --- HOLIDAYS ---
@@ -102,7 +101,6 @@ function mcs_options_page_html() {
 
 // --- RENDER CALLBACKS ---
 function mcs_general_section_callback() { echo '<p>Enter your core business details here.</p>'; }
-function mcs_bank_section_callback() { echo '<p>Enter your bank details below.</p>'; }
 function mcs_frontend_section_callback() { echo '<p>Control how elements appear on the public facing site.</p>'; }
 function mcs_backend_section_callback() { echo '<p>Tools to assist with Order Management.</p>'; }
 function mcs_holidays_section_callback() { echo '<p>Manage dates when the store will be closed.</p>'; }
@@ -139,7 +137,24 @@ function mcs_bank_acc_name_render() { echo '<input type="text" name="mcs_bank_ac
 function mcs_bank_bsb_render() { echo '<input type="text" name="mcs_bank_bsb" value="' . esc_attr(get_option('mcs_bank_bsb')) . '" class="regular-text">'; }
 function mcs_bank_acc_num_render() { echo '<input type="text" name="mcs_bank_acc_num" value="' . esc_attr(get_option('mcs_bank_acc_num')) . '" class="regular-text">'; }
 function mcs_show_abn_render() { echo '<label><input type="checkbox" name="mcs_show_abn_footer" value="1" ' . checked(1, get_option('mcs_show_abn_footer'), false) . ' /> Display ABN in footer.</label>'; }
-function mcs_enable_bank_action_render() { echo '<label><input type="checkbox" name="mcs_enable_bank_action" value="1" ' . checked(1, get_option('mcs_enable_bank_action'), false) . ' /> Enable "Send Bank Details" action.</label>'; }
+function mcs_enable_bank_action_render() { 
+    echo '<label><input type="checkbox" id="mcs_enable_bank_action" name="mcs_enable_bank_action" value="1" ' . checked(1, get_option('mcs_enable_bank_action'), false) . ' /> Enable "Send Bank Details" action.</label>'; 
+    ?>
+    <script>
+        jQuery(document).ready(function($) {
+            function toggleBankDetails() {
+                if ($('#mcs_enable_bank_action').is(':checked')) {
+                    $('.mcs-bank-detail-row').show();
+                } else {
+                    $('.mcs-bank-detail-row').hide();
+                }
+            }
+            $('#mcs_enable_bank_action').change(toggleBankDetails);
+            toggleBankDetails();
+        });
+    </script>
+    <?php
+}
 
 function mcs_min_order_amount_render() {
     $enabled = get_option('mcs_enable_min_order');
