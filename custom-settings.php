@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Aaron Falzon - Custom Theme Settings
+ * Plugin Name: Falz.com.au WP Theme
  * Description: A custom settings panel for the theme with Front-end and Back-end configurations.
- * Version: 1.9.a
+ * Version: 1.9.b
  * Author: Aaron Falzon
  */
 
